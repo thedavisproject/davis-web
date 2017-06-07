@@ -1,6 +1,6 @@
 {
   "name": "davis-web",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Web API for the Davis Data Management and Visualization platform",
   "main": "index.js",
   "directories": {

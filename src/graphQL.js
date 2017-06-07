@@ -305,13 +305,9 @@ module.exports = ({
     }
   });
 
-  const graphQLEntityAPI = new graphql.GraphQLObjectType({
-    name: 'EntityAPI',
+  const graphQLEntityMutation = new graphql.GraphQLObjectType({
+    name: 'EntityMutation',
     fields: {
-      query: {
-        type: graphQLEntityQuery,
-        resolve: () => ({})
-      },
       create: {
         type: new graphql.GraphQLList(graphQLEntity),
         args: {
@@ -336,19 +332,20 @@ module.exports = ({
       }
     }
   });
-
-  const topLevelApi = new graphql.GraphQLObjectType({
-    name: 'TopLevel',
-    fields: {
-      entities: {
-        type: graphQLEntityAPI,
-        resolve: () => ({})
-      }
-    }
-  });
-
+    
   const schema = new graphql.GraphQLSchema({
-    query: topLevelApi
+    query: new graphql.GraphQLObjectType({
+      name: 'Query',
+      fields: {
+        entities: { type: graphQLEntityQuery, resolve: () => ({}) }
+      }
+    }),
+    mutation: new graphql.GraphQLObjectType({
+      name: 'Mutation',
+      fields: {
+        entities: { type: graphQLEntityMutation, resolve: () => ({}) }
+      }
+    })
   });
 
   return {
