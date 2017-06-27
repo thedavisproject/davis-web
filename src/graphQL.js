@@ -11,15 +11,23 @@ const Task = require('data.task');
 const Async = require('control.async')(Task);
 const when = require('when');
 const task2Promise = Async.toPromise(when.promise);
+const queryString = require('./model/queryString');
 
 module.exports = ({
-  entityRepository
+  entityRepository,
+  dataQuery
 }) => {
 
   const nullAwareQueryFirstById = R.curry((queryFn, id) =>
     !R.isNil(id) ?
       queryFn(id).map(R.head) :
       Task.of(null));
+
+  const resolveEntityFromId = (propertyName, entityType) =>
+    props => task2Promise(
+      nullAwareQueryFirstById(
+        () => entityRepository.queryById(entityType, props[propertyName]),
+        props[propertyName]));
 
   // *** Shared Fields ***
   const entityFields = {
@@ -69,10 +77,7 @@ module.exports = ({
     fields: () => Object.assign({}, entityFields, {
       parent: {
         type : graphQLFolder,
-        resolve: ({parent: parentId}) => task2Promise(
-          nullAwareQueryFirstById(
-            () => entityRepository.queryById(folder.entityType, parentId),
-            parentId))
+        resolve: resolveEntityFromId('parent', folder.entityType)
       }
     })
   });
@@ -99,10 +104,7 @@ module.exports = ({
       folder: {
         type : graphQLFolder,
         // Resolve the folder object from the folder ID
-        resolve: ({folder: folderId}) => task2Promise(
-          nullAwareQueryFirstById(
-            () => entityRepository.queryById(folder.entityType, folderId),
-            folderId))
+        resolve: resolveEntityFromId('folder', folder.entityType)
       },
       dataModified : { type : GraphQLDate },
       schema: { type: GraphQLJSON }
@@ -136,10 +138,7 @@ module.exports = ({
       scopedDataSet: {
         type : graphQLDataSet,
         // Resolve the data set object from the data set ID
-        resolve: ({scopedDataSet: dataSetId}) => task2Promise(
-          nullAwareQueryFirstById(
-            () => entityRepository.queryById(dataSet.entityType, dataSetId),
-            dataSetId))
+        resolve: resolveEntityFromId('scopedDataSet', dataSet.entityType)
       },
       attributes: {
         type : new graphql.GraphQLList(graphQLAttribute),
@@ -178,18 +177,12 @@ module.exports = ({
       // Resolve the variable object from the variable ID
       variable: {
         type : graphQLVariable,
-        resolve: ({variable: variableId}) => task2Promise(
-          nullAwareQueryFirstById(
-            () => entityRepository.queryById(variable.entityType, variableId),
-            variableId))
+        resolve: resolveEntityFromId('variable', variable.entityType)
       },
       key: { type: graphql.GraphQLString },
       parent: {
         type : graphQLAttribute,
-        resolve: ({parent: parentId}) => task2Promise(
-          nullAwareQueryFirstById(
-            () => entityRepository.queryById(attribute.entityType, parentId),
-            parentId))
+        resolve: resolveEntityFromId('parent', attribute.entityType)
       }
     })
   });
@@ -263,7 +256,6 @@ module.exports = ({
     }
   });
 
-  // Top Level API
   function entityAllGraphQLQuery(graphQLType, entityType){
     return {
       type: new graphql.GraphQLList(graphQLType),
@@ -332,12 +324,105 @@ module.exports = ({
       }
     }
   });
+
+  const factFields = {
+    variable: {
+      type: graphQLVariable,
+      resolve: resolveEntityFromId('variable', variable.entityType)
+    },
+    type: {
+      type: graphql.GraphQLInt
+    }
+  };
+
+  const graphQLFact = new graphql.GraphQLInterfaceType({
+    name: 'Fact',
+    fields: factFields,
+    resolveType: function(value){
+      if(value.type === variable.types.categorical){
+        return graphQLCategoricalFact;
+      }
+      if(value.type === variable.types.quantitative){
+        return graphQLQuantitativeFact;
+      }
+    }
+  });
+    
+  const graphQLCategoricalFact = new graphql.GraphQLObjectType({
+    name: 'CategoricalFact',
+    interfaces: [graphQLFact],
+    fields: Object.assign({}, factFields, {
+      attribute: {
+        type: graphQLAttribute,
+        resolve: resolveEntityFromId('attribute', attribute.entityType)
+      }
+    })
+  });
+
+  const graphQLQuantitativeFact = new graphql.GraphQLObjectType({
+    name: 'QuantitativeFact',
+    interfaces: [graphQLFact],
+    fields: Object.assign({}, factFields, {
+      value: {
+        type: graphql.GraphQLFloat  
+      }
+    })
+  });
+
+  const graphQLIndividual = new graphql.GraphQLObjectType({
+    name: 'Individual',
+    fields:{
+      id: {
+        type: graphql.GraphQLInt
+      },
+      dataSet: {
+        type: graphQLDataSet,
+        resolve: resolveEntityFromId('dataSet', dataSet.entityType)
+      },
+      facts: {
+        type: new graphql.GraphQLList(graphQLFact)
+      }
+    }
+  });
+
+  const graphQLDataSetQueryResults = new graphql.GraphQLObjectType({
+    name: 'DataSetQueryResults',
+    fields: {
+      dataSet:{
+        type: graphQLDataSet,
+        resolve: resolveEntityFromId('dataSet', dataSet.entityType)
+      },
+      data: {
+        type: new graphql.GraphQLList(graphQLIndividual)
+      }
+    }
+  });
+
+  const graphQLDataQuery = {
+    type: new graphql.GraphQLList(graphQLDataSetQueryResults),
+    args: {
+      dataSets: {
+        type: new graphql.GraphQLList(graphql.GraphQLInt),
+        defaultValue: []
+      },
+      q: {
+        type: graphql.GraphQLString
+      }
+    },
+    resolve: (_, {dataSets, q}) => {
+      const filters = queryString.queryFilters.deSerialize(q);
+      return task2Promise(dataQuery(filters, dataSets));
+    }
+  };
     
   const schema = new graphql.GraphQLSchema({
+    // Manually include types that aren't used elsewhere
+    types: [graphQLQuantitativeFact, graphQLCategoricalFact],
     query: new graphql.GraphQLObjectType({
       name: 'Query',
       fields: {
-        entities: { type: graphQLEntityQuery, resolve: () => ({}) }
+        entities: { type: graphQLEntityQuery, resolve: () => ({}) },
+        data: graphQLDataQuery
       }
     }),
     mutation: new graphql.GraphQLObjectType({
