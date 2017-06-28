@@ -15,19 +15,25 @@ const queryString = require('./model/queryString');
 
 module.exports = ({
   entityRepository,
+  entityLoaderFactory,
   dataQuery
 }) => {
 
-  const nullAwareQueryFirstById = R.curry((queryFn, id) =>
-    !R.isNil(id) ?
-      queryFn(id).map(R.head) :
-      Task.of(null));
+  const entityLoaders = entityLoaderFactory([
+    dataSet.entityType,
+    folder.entityType,
+    variable.entityType,
+    attribute.entityType
+  ]);
 
   const resolveEntityFromId = (propertyName, entityType) =>
-    props => task2Promise(
-      nullAwareQueryFirstById(
-        () => entityRepository.queryById(entityType, props[propertyName]),
-        props[propertyName]));
+    props => {
+      const id = props[propertyName];
+      if(R.isNil(id)){
+        return null;
+      }
+      return entityLoaders[entityType].load(props[propertyName]); 
+    };
 
   // *** Shared Fields ***
   const entityFields = {
