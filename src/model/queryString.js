@@ -1,13 +1,12 @@
-const { head, tail, isNil, any, isEmpty, match, merge, toPairs,
-        pipe, map } = require('ramda'),
-  { variable } = require('davis-model');
+const R = require('ramda');
+const { variable } = require('davis-model');
 
-const _comparators = ['<', '<=', '=', '>=', '>'];
+const comparators = ['<', '<=', '=', '>=', '>'];
 
-const _parseKey = function(key){
+const parseKey = function(key){
   
-  const typeCharacter = head(key),
-    variableId = tail(key);
+  const typeCharacter = R.head(key),
+    variableId = R.tail(key);
 
   const variableType = 
     typeCharacter === 'c' ?
@@ -17,7 +16,7 @@ const _parseKey = function(key){
       null;
 
   // Validate key
-  if(isNil(variableType)){
+  if(R.isNil(variableType)){
     throw `Invalid variable key: ${key}. Must begin with 'c' or 'q'.`;
   }
 
@@ -31,16 +30,16 @@ const _parseKey = function(key){
   };
 };
 
-const _parseCategoricalValue = function(value){
+const parseCategoricalValue = function(value){
   
-  if(isEmpty(value)){
+  if(R.isEmpty(value)){
     return {
       attributes: []
     };
   }
 
   const parts = value.split(',');
-  if(any(isNaN, parts)){
+  if(R.any(isNaN, parts)){
     throw `Invalid attribute IDs for categorical variable: ${value}`;
   }
   return {
@@ -48,12 +47,12 @@ const _parseCategoricalValue = function(value){
   };
 };
 
-const _parseQuantitativeValue = function(value){
+const parseQuantitativeValue = function(value){
   
-  const comparatorMatch = _comparators.join('|'),
+  const comparatorMatch = comparators.join('|'),
     matchExp = new RegExp(`^(${comparatorMatch})(.*)`);
 
-  const groups = match(matchExp, value);
+  const groups = R.match(matchExp, value);
 
   if(groups.length === 0){
     throw `Invalid query value for quantitative variable: ${value}`;
@@ -65,20 +64,30 @@ const _parseQuantitativeValue = function(value){
   };
 };
 
-const _parseKeyValuePair = function(key, value){
+const parseKeyValuePair = function(key, value){
 
-  const parsedKey = _parseKey(key),
+  const parsedKey = parseKey(key),
     parsedValue = parsedKey.type === variable.types.categorical ?
-      _parseCategoricalValue(value) :
-      _parseQuantitativeValue(value);
+      parseCategoricalValue(value) :
+      parseQuantitativeValue(value);
 
-  return merge(parsedKey, parsedValue);
+  return R.merge(parsedKey, parsedValue);
 };
 
 module.exports = {
   queryFilters: {
-    deSerialize: pipe(
-      toPairs,
-      map(([k, v]) => _parseKeyValuePair(k, v)))
-  }
+    deSerialize: R.pipe(
+      R.toPairs,
+      R.map(([k, v]) => parseKeyValuePair(k, v)))
+  },
+  stringToMap: R.pipe(
+    R.split('&'),
+    R.filter(R.complement(R.isEmpty)),
+    R.map(R.split('=')),
+    R.map(([key, value]) => ({
+      key, value
+    })),
+    R.groupBy(R.prop('key')),
+    R.map(R.map(R.prop('value'))),
+    R.map(v => v.length === 1 ? v[0] : v))
 };

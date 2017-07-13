@@ -108,3 +108,29 @@ describe('De-serialize query filters', function(){
 
 });
 
+describe('Parse Query String', function(){
+
+  it('should create empty map from empty string', function(){
+    expect(queryString.stringToMap('')).to.deep.equal({});
+  });
+
+  it('should parse single value', function(){
+    expect(queryString.stringToMap('foo=bar')).to.deep.equal({
+      foo: 'bar'
+    });
+  });
+
+  it('should parse multiple values', function(){
+    expect(queryString.stringToMap('foo=bar&foo2=bar2')).to.deep.equal({
+      foo: 'bar',
+      foo2: 'bar2'
+    });
+  });
+
+  it('should convert multiple values with same key to array', function(){
+    expect(queryString.stringToMap('foo=bar&foo=bar2')).to.deep.equal({
+      foo: ['bar', 'bar2']
+    });
+  });
+});
+

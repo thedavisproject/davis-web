@@ -4,6 +4,9 @@ const GraphQLDate = require('graphql-date');
 const GraphQLJSON = require('graphql-type-json');
 const GraphQLUnionInputType = require('graphql-union-input-type');
 const graphqlHTTP = require('express-graphql');
+const shared = require('davis-shared');
+const {thread} = shared.fp;
+const {isNilOrEmpty} = shared.string;
 const model = require('davis-model');
 const { dataSet, folder, variable, attribute } = model;
 const q = model.query.build;
@@ -412,11 +415,17 @@ module.exports = ({
         defaultValue: []
       },
       q: {
-        type: graphql.GraphQLString
+        type: graphql.GraphQLString,
+        defaultValue: '' 
       }
     },
     resolve: (_, {dataSets, q}) => {
-      const filters = queryString.queryFilters.deSerialize(q);
+
+      const filters = isNilOrEmpty(q) ? null :
+        thread(q,
+        queryString.stringToMap,
+        queryString.queryFilters.deSerialize);
+
       return task2Promise(dataQuery(filters, dataSets));
     }
   };
