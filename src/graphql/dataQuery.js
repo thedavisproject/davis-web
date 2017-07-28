@@ -1,3 +1,4 @@
+const R = require('ramda');
 const Task = require('data.task');
 const Async = require('control.async')(Task);
 const when = require('when');
@@ -12,6 +13,8 @@ module.exports = ({
   graphql,
   dataQuery,
   dataAnalyze,
+  dataImport,
+  individualGenerator: {rawToIndividuals},
   config,
   csvParse
 }) => {
@@ -51,8 +54,27 @@ module.exports = ({
     }
   });
 
+  const gqlDataImport = registryIgnored => ({
+    type: graphql.GraphQLInt,
+    args: {
+      dataSet: { type: new graphql.GraphQLNonNull(graphql.GraphQLInt) },
+      fileId: { type: new graphql.GraphQLNonNull(graphql.GraphQLString) }
+    },
+    resolve: (_, {dataSet, fileId}) => {
+      const filePath = `${config.upload.path}/${fileId}`;
+
+      return task2Promise(thread(
+        rawToIndividuals(dataSet),
+        R.chain(toIndividuals => 
+          dataImport(
+            dataSet, 
+            csvParse(filePath).pipe(toIndividuals)))));
+    }
+  });
+
   return {
     gqlDataQuery,
-    gqlDataAnalyze
+    gqlDataAnalyze,
+    gqlDataImport
   };
 };
