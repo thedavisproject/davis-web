@@ -9,7 +9,8 @@ module.exports = {
       dataSet: require('./src/graphql/model/dataSet'),
       variable: require('./src/graphql/model/variable'),
       attribute: require('./src/graphql/model/attribute'),
-      data: require('./src/graphql/model/data')
+      data: require('./src/graphql/model/data'),
+      import: require('./src/graphql/model/import')
     },
     entityQuery: require('./src/graphql/entityQuery'),
     dataQuery: require('./src/graphql/dataQuery')

@@ -10,7 +10,10 @@ const queryString = require('../queryString');
 
 module.exports = ({
   graphql,
-  dataQuery
+  dataQuery,
+  dataAnalyze,
+  config,
+  csvParse
 }) => {
 
   const gqlDataQuery = registry => ({
@@ -36,7 +39,20 @@ module.exports = ({
     }
   });
 
+  const gqlDataAnalyze = registry => ({
+    type: new graphql.GraphQLList(getType('VariableMatch', registry)),
+    args: {
+      dataSet: { type: new graphql.GraphQLNonNull(graphql.GraphQLInt) },
+      fileId: { type: new graphql.GraphQLNonNull(graphql.GraphQLString) }
+    },
+    resolve: (_, {dataSet, fileId}) => {
+      const filePath = `${config.upload.path}/${fileId}`;
+      return task2Promise(dataAnalyze(dataSet, csvParse(filePath)));
+    }
+  });
+
   return {
-    gqlDataQuery
+    gqlDataQuery,
+    gqlDataAnalyze
   };
 };
