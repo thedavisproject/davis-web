@@ -19,3 +19,5 @@ exports.registerTypeFac = R.curry((typeFac, registry) =>
   registerType(typeFac(registry), registry));
 
 exports.getType = R.curry((typeName, registry) => registry[typeName]);
+
+exports.getAllTypes = R.values;

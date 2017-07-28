@@ -57,10 +57,6 @@ module.exports = ({
       id: {
         type: graphql.GraphQLInt
       },
-      dataSet: {
-        type: getType('DataSet', registry),
-        resolve: resolveEntityFromId('dataSet', dataSet.entityType)
-      },
       facts: {
         type: new graphql.GraphQLList(getType('Fact', registry))
       }

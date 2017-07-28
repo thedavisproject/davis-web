@@ -27,7 +27,7 @@ module.exports = ({
     },
     resolve: (_, {dataSets, q}) => {
 
-      const filters = isNilOrEmpty(q) ? null :
+      const filters = isNilOrEmpty(q) ? [] :
         thread(q,
         queryString.stringToMap,
         queryString.queryFilters.deSerialize);
