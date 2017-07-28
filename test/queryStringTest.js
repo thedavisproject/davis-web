@@ -1,5 +1,5 @@
 const { expect } = require('chai'),
-  queryString = require('../../src/model/queryString'),
+  queryString = require('../src/queryString'),
   { variable } = require('davis-model');
 
 describe('De-serialize query filters', function(){
