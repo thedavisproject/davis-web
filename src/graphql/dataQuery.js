@@ -14,6 +14,7 @@ module.exports = ({
   dataQuery,
   dataAnalyze,
   dataImport,
+  dataDelete,
   individualGenerator: {rawToIndividuals},
   config,
   csvParse
@@ -72,9 +73,43 @@ module.exports = ({
     }
   });
 
+  const gqlDataDelete = registryIgnored => ({
+    type: graphql.GraphQLBoolean,
+    args: {
+      dataSet: { 
+        type: new graphql.GraphQLList(graphql.GraphQLInt),
+        defaultValue: []
+      },
+      variable: { 
+        type: new graphql.GraphQLList(graphql.GraphQLInt),
+        defaultValue: []
+      },
+      attribute: { 
+        type: new graphql.GraphQLList(graphql.GraphQLInt),
+        defaultValue: []
+      }
+    },
+    resolve: (_, filters) => task2Promise(dataDelete(filters)) 
+  });
+
+  const gqlDataQueries = registry => new graphql.GraphQLObjectType({
+    name: 'DataQuery',
+    fields: {
+      query: gqlDataQuery(registry),
+      analyze: gqlDataAnalyze(registry)
+    }
+  });
+
+  const gqlDataMutation = registry => new graphql.GraphQLObjectType({
+    name: 'DataMutation',
+    fields: {
+      import: gqlDataImport(registry),
+      delete: gqlDataDelete(registry)
+    }
+  });
+
   return {
-    gqlDataQuery,
-    gqlDataAnalyze,
-    gqlDataImport
+    gqlDataQueries,
+    gqlDataMutation
   };
 };
