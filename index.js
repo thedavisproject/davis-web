@@ -16,6 +16,8 @@ module.exports = {
     dataQuery: require('./src/graphql/dataQuery')
   },
   fileUploader: require('./src/fileUploader'),
+  dataExport: require('./src/dataExport'),
+  expressErrorHandler: require('./src/expressErrorHandler'),
   passport: {
     basic: require('./src/passportBasic')
   }

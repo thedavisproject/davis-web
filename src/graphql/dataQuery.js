@@ -65,9 +65,9 @@ module.exports = ({
 
       return task2Promise(thread(
         rawToIndividuals(dataSet),
-        R.chain(toIndividuals => 
+        R.chain(toIndividuals =>
           dataImport(
-            dataSet, 
+            dataSet,
             csvParse(filePath).pipe(toIndividuals)))));
     }
   });
