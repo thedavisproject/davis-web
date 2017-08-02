@@ -13,7 +13,8 @@ module.exports = {
       import: require('./src/graphql/model/import')
     },
     entityQuery: require('./src/graphql/entityQuery'),
-    dataQuery: require('./src/graphql/dataQuery')
+    dataQuery: require('./src/graphql/dataQuery'),
+    publish: require('./src/graphql/publish')
   },
   fileUploader: require('./src/fileUploader'),
   dataExport: require('./src/dataExport'),
