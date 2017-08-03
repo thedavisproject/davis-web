@@ -1,3 +1,4 @@
+const R = require('ramda');
 const model = require('davis-model');
 const { dataSet, folder, variable, attribute } = model;
 const q = model.query.build;
@@ -13,10 +14,20 @@ module.exports = ({
   graphql
 }) => {
 
-  function entityAllGraphQLQuery(gqlType, entityType){
+  function entityIndividualGraphQLQuery(gqlType, entityType){
     return {
-      type: new graphql.GraphQLList(gqlType),
-      resolve: () => task2Promise(entityRepository.queryAll(entityType))
+      type: gqlType,
+      args: {
+        id: {
+          type : new graphql.GraphQLNonNull(graphql.GraphQLInt)
+        }
+      },
+      resolve: (_, {id}) => {
+        const queryExp = q.eq('id', id);
+        return task2Promise(
+          entityRepository.query(entityType, queryExp)
+            .map(results => R.isNil(results) || results.length < 1 ? null : results[0]));
+      }
     };
   }
 
@@ -24,18 +35,13 @@ module.exports = ({
     return {
       type: new graphql.GraphQLList(gqlType),
       args: {
-        id: {
-          type : graphql.GraphQLInt,
-          defaultValue: 0
-        },
         query: {
           type : graphql.GraphQLJSON,
           defaultValue: []
         }
       },
-      resolve: (_, {id, query}) => {
-        const queryExp = id !== 0 ?  q.eq('id', id) : query;
-        return task2Promise(entityRepository.query(entityType, queryExp));
+      resolve: (_, {query}) => {
+        return task2Promise(entityRepository.query(entityType, query));
       }
     };
   }
@@ -43,14 +49,14 @@ module.exports = ({
   const gqlEntityQuery = registry => new graphql.GraphQLObjectType({
     name: 'EntityQuery',
     fields: {
-      folders: entityAllGraphQLQuery(getType('Folder', registry), folder.entityType),
-      folder: entityGraphQLQuery(getType('Folder', registry), folder.entityType),
-      dataSets: entityAllGraphQLQuery(getType('DataSet', registry), dataSet.entityType),
-      dataSet: entityGraphQLQuery(getType('DataSet', registry), dataSet.entityType),
-      variables: entityAllGraphQLQuery(getType('Variable', registry), variable.entityType),
-      variable: entityGraphQLQuery(getType('Variable', registry), variable.entityType),
-      attributes: entityAllGraphQLQuery(getType('Attribute', registry), attribute.entityType),
-      attribute: entityGraphQLQuery(getType('Attribute', registry), attribute.entityType),
+      folders: entityGraphQLQuery(getType('Folder', registry), folder.entityType),
+      folder: entityIndividualGraphQLQuery(getType('Folder', registry), folder.entityType),
+      dataSets: entityGraphQLQuery(getType('DataSet', registry), dataSet.entityType),
+      dataSet: entityIndividualGraphQLQuery(getType('DataSet', registry), dataSet.entityType),
+      variables: entityGraphQLQuery(getType('Variable', registry), variable.entityType),
+      variable: entityIndividualGraphQLQuery(getType('Variable', registry), variable.entityType),
+      attributes: entityGraphQLQuery(getType('Attribute', registry), attribute.entityType),
+      attribute: entityIndividualGraphQLQuery(getType('Attribute', registry), attribute.entityType),
     }
   });
 
