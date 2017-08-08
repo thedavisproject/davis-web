@@ -12,9 +12,7 @@ module.exports = ({
       type: getType('Variable', registry),
       resolve: resolveEntityFromId('variable', variable.entityType)
     },
-    type: {
-      type: graphql.GraphQLInt
-    }
+    type: { type: getType('VariableType', registry)}
   });
 
   const gqlFact = registry => new graphql.GraphQLInterfaceType({

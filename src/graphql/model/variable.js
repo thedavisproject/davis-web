@@ -1,5 +1,5 @@
 const model = require('davis-model');
-const { dataSet, attribute } = model;
+const { dataSet, attribute, variable } = model;
 const q = model.query.build;
 const Task = require('data.task');
 const Async = require('control.async')(Task);
@@ -14,11 +14,20 @@ module.exports = ({
   graphql_entityResolver: { resolveEntityFromId }
 }) => {
 
+  const gqlVariableTypeEnum = registryIgnored => new graphql.GraphQLEnumType({
+    name: 'VariableType',
+    values: {
+      CATEGORICAL: { value: variable.types.categorical },
+      NUMERICAL: { value: variable.types.numerical },
+      TEXT: { value: variable.types.text }
+    }
+  });
+
   const gqlVariable = registry => new graphql.GraphQLObjectType({
     name: 'Variable',
     interfaces: [getType('Entity', registry)],
     fields: () => Object.assign({}, entityFields, {
-      type: { type: graphql.GraphQLInt },
+      type: { type: getType('VariableType', registry)},
       key: { type: graphql.GraphQLString },
       format: { type: graphql.GraphQLJSON },
       scopedDataSet: {
@@ -35,20 +44,20 @@ module.exports = ({
     })
   });
 
-  const gqlVariableCreate = registryIgnored => new graphql.GraphQLInputObjectType({
+  const gqlVariableCreate = registry => new graphql.GraphQLInputObjectType({
     name: 'VariableCreate',
     fields: () => Object.assign({}, entityCreateFields, {
-      type         : { type : graphql.GraphQLInt },
+      type         : { type: getType('VariableType', registry)},
       key          : { type : graphql.GraphQLString },
       scopedDatSet : { type : graphql.GraphQLInt },
       format       : { type : graphql.GraphQLJSON }
     })
   });
 
-  const gqlVariableUpdate = registryIgnored => new graphql.GraphQLInputObjectType({
+  const gqlVariableUpdate = registry => new graphql.GraphQLInputObjectType({
     name: 'VariableUpdate',
     fields: () => Object.assign({}, entityUpdateFields, {
-      type         : { type : graphql.GraphQLInt },
+      type         : { type: getType('VariableType', registry)},
       key          : { type : graphql.GraphQLString },
       scopedDatSet : { type : graphql.GraphQLInt },
       format       : { type : graphql.GraphQLJSON }
@@ -56,6 +65,7 @@ module.exports = ({
   });
 
   return {
+    gqlVariableTypeEnum,
     gqlVariable,
     gqlVariableCreate,
     gqlVariableUpdate
