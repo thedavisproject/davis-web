@@ -24,8 +24,11 @@ module.exports = ({
       if(value.type === variable.types.categorical){
         return getType('CategoricalFact', registry);
       }
-      if(value.type === variable.types.quantitative){
-        return getType('QuantitativeFact', registry);
+      if(value.type === variable.types.numerical){
+        return getType('NumericalFact', registry);
+      }
+      if(value.type === variable.types.text){
+        return getType('TextFact', registry);
       }
     }
   });
@@ -41,12 +44,22 @@ module.exports = ({
     })
   });
 
-  const gqlQuantitativeFact = registry => new graphql.GraphQLObjectType({
-    name: 'QuantitativeFact',
+  const gqlNumericalFact = registry => new graphql.GraphQLObjectType({
+    name: 'NumericalFact',
     interfaces: [getType('Fact', registry)],
     fields: Object.assign({}, factFields(registry), {
       value: {
         type: graphql.GraphQLFloat
+      }
+    })
+  });
+
+  const gqlTextFact = registry => new graphql.GraphQLObjectType({
+    name: 'TextFact',
+    interfaces: [getType('Fact', registry)],
+    fields: Object.assign({}, factFields(registry), {
+      value: {
+        type: graphql.GraphQLString
       }
     })
   });
@@ -79,7 +92,8 @@ module.exports = ({
   return {
     gqlFact,
     gqlCategoricalFact,
-    gqlQuantitativeFact,
+    gqlNumericalFact,
+    gqlTextFact,
     gqlIndividual,
     gqlDataSetQueryResults
   };

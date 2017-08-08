@@ -56,7 +56,7 @@ module.exports = ({
       variables: entityGraphQLQuery(getType('Variable', registry), variable.entityType),
       variable: entityIndividualGraphQLQuery(getType('Variable', registry), variable.entityType),
       attributes: entityGraphQLQuery(getType('Attribute', registry), attribute.entityType),
-      attribute: entityIndividualGraphQLQuery(getType('Attribute', registry), attribute.entityType),
+      attribute: entityIndividualGraphQLQuery(getType('Attribute', registry), attribute.entityType)
     }
   });
 
@@ -90,6 +90,6 @@ module.exports = ({
 
   return {
     gqlEntityQuery,
-    gqlEntityMutation,
+    gqlEntityMutation
   };
 };

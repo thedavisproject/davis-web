@@ -31,7 +31,7 @@ module.exports = ({
         resolve: ({id}) => task2Promise(entityRepository.query(
           attribute.entityType,
           q.eq('variable', id)))
-      },
+      }
     })
   });
 

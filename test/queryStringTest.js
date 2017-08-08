@@ -46,31 +46,60 @@ describe('De-serialize query filters', function(){
     ]);
   });
 
-  it('should deserialize quantitative', function(){
+  it('should deserialize numerical', function(){
     const deserialized = queryString.queryFilters.deSerialize({
-      'q4': '<100'
+      'n4': '<100'
     });    
 
     expect(deserialized).to.deep.equal([
       {
         variable: 4,
-        type: variable.types.quantitative,
+        type: variable.types.numerical,
         value: 100,
         comparator: '<'
       }
     ]);
   });
 
+  it('should deserialize text', function(){
+    const deserialized = queryString.queryFilters.deSerialize({
+      't4': 'foo'
+    });    
+
+    expect(deserialized).to.deep.equal([
+      {
+        variable: 4,
+        type: variable.types.text,
+        value: 'foo'
+      }
+    ]);
+  });
+
+  it('should deserialize empty text', function(){
+    const deserialized = queryString.queryFilters.deSerialize({
+      't4': null
+    });    
+
+    expect(deserialized).to.deep.equal([
+      {
+        variable: 4,
+        type: variable.types.text,
+        value: ''
+      }
+    ]);
+  });
+
   it('should deserialize multiple', function(){
     const deserialized = queryString.queryFilters.deSerialize({
-      'q7': '<100',
-      'c4': '4,5,6,78'
+      'n7': '<100',
+      'c4': '4,5,6,78',
+      't5': 'foo'
     });    
 
     expect(deserialized).to.deep.equal([
       {
         variable: 7,
-        type: variable.types.quantitative,
+        type: variable.types.numerical,
         value: 100,
         comparator: '<'
       },
@@ -78,11 +107,16 @@ describe('De-serialize query filters', function(){
         variable: 4,
         type: variable.types.categorical,
         attributes: [ 4,5,6,78 ]
+      },
+      {
+        variable: 5,
+        type: variable.types.text,
+        value: 'foo'
       }
     ]);
   });
 
-  it('should throw for non c/q key', function(){
+  it('should throw for non c/n/t key', function(){
     expect(() => queryString.queryFilters.deSerialize({
       'u4': '4,5,6,78'
     })).to.throw(/Invalid variable key/);
@@ -100,10 +134,10 @@ describe('De-serialize query filters', function(){
     })).to.throw(/Invalid attribute IDs/);
   });
 
-  it('should throw for bad quantitative value', function(){
+  it('should throw for bad numerical value', function(){
     expect(() => queryString.queryFilters.deSerialize({
-      'q45': '56'
-    })).to.throw(/Invalid query value for quantitative variable/);
+      'n45': '56'
+    })).to.throw(/Invalid query value for numerical variable/);
   });
 
 });

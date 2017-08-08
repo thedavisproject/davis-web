@@ -11,8 +11,10 @@ const parseKey = function(key){
   const variableType = 
     typeCharacter === 'c' ?
       variable.types.categorical :
-    typeCharacter === 'q' ?
-      variable.types.quantitative :
+    typeCharacter === 'n' ?
+      variable.types.numerical :
+    typeCharacter === 't' ?
+      variable.types.text :
       null;
 
   // Validate key
@@ -47,7 +49,7 @@ const parseCategoricalValue = function(value){
   };
 };
 
-const parseQuantitativeValue = function(value){
+const parseNumericalValue = function(value){
   
   const comparatorMatch = comparators.join('|'),
     matchExp = new RegExp(`^(${comparatorMatch})(.*)`);
@@ -55,7 +57,7 @@ const parseQuantitativeValue = function(value){
   const groups = R.match(matchExp, value);
 
   if(groups.length === 0){
-    throw `Invalid query value for quantitative variable: ${value}`;
+    throw `Invalid query value for numerical variable: ${value}`;
   }
 
   return {
@@ -64,12 +66,31 @@ const parseQuantitativeValue = function(value){
   };
 };
 
+const parseTextValue = function(value){
+  
+  if(!value || R.isEmpty(value)){
+    return {
+      value: ''
+    };
+  }
+
+  return {
+    value
+  };
+};
+
 const parseKeyValuePair = function(key, value){
 
-  const parsedKey = parseKey(key),
-    parsedValue = parsedKey.type === variable.types.categorical ?
+  const parsedKey = parseKey(key);
+
+  const parsedValue = 
+    parsedKey.type === variable.types.categorical ?
       parseCategoricalValue(value) :
-      parseQuantitativeValue(value);
+    parsedKey.type === variable.types.numerical ?
+      parseNumericalValue(value) : 
+    parsedKey.type === variable.types.text ?
+      parseTextValue(value) : 
+      null;
 
   return R.merge(parsedKey, parsedValue);
 };
