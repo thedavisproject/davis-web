@@ -1,4 +1,3 @@
-const R = require('ramda');
 const Task = require('data.task');
 const Async = require('control.async')(Task);
 const when = require('when');
@@ -15,9 +14,8 @@ module.exports = ({
   dataAnalyze,
   dataImport,
   dataDelete,
-  individualGenerator: {rawToIndividuals},
   config,
-  csvParse
+  parseDataFile
 }) => {
 
   const gqlDataQuery = registry => ({
@@ -51,7 +49,7 @@ module.exports = ({
     },
     resolve: (_, {dataSet, fileId}) => {
       const filePath = `${config.upload.path}/${fileId}`;
-      return task2Promise(dataAnalyze(dataSet, csvParse(filePath)));
+      return task2Promise(dataAnalyze(dataSet, parseDataFile(filePath)));
     }
   });
 
@@ -64,12 +62,7 @@ module.exports = ({
     resolve: (_, {dataSet, fileId}) => {
       const filePath = `${config.upload.path}/${fileId}`;
 
-      return task2Promise(thread(
-        rawToIndividuals(dataSet),
-        R.chain(toIndividuals =>
-          dataImport(
-            dataSet,
-            csvParse(filePath).pipe(toIndividuals)))));
+      return task2Promise(dataImport(dataSet, filePath));
     }
   });
 
