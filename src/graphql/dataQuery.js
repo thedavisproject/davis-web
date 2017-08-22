@@ -12,8 +12,9 @@ module.exports = ({
   graphql,
   dataQuery,
   dataAnalyze,
-  dataImport,
   dataDelete,
+  jobQueue,
+  importJob,
   config,
   parseDataFile
 }) => {
@@ -53,8 +54,8 @@ module.exports = ({
     }
   });
 
-  const gqlDataImport = registryIgnored => ({
-    type: graphql.GraphQLInt,
+  const gqlDataImport = registry => ({
+    type: getType('Job', registry),
     args: {
       dataSet: { type: new graphql.GraphQLNonNull(graphql.GraphQLInt) },
       fileId: { type: new graphql.GraphQLNonNull(graphql.GraphQLString) }
@@ -62,27 +63,27 @@ module.exports = ({
     resolve: (_, {dataSet, fileId}) => {
       const filePath = `${config.upload.path}/${fileId}`;
 
-      return task2Promise(dataImport(dataSet, filePath));
+      return task2Promise(importJob.queue(dataSet, filePath, jobQueue));
     }
   });
 
   const gqlDataDelete = registryIgnored => ({
     type: graphql.GraphQLBoolean,
     args: {
-      dataSet: { 
+      dataSet: {
         type: new graphql.GraphQLList(graphql.GraphQLInt),
         defaultValue: []
       },
-      variable: { 
+      variable: {
         type: new graphql.GraphQLList(graphql.GraphQLInt),
         defaultValue: []
       },
-      attribute: { 
+      attribute: {
         type: new graphql.GraphQLList(graphql.GraphQLInt),
         defaultValue: []
       }
     },
-    resolve: (_, filters) => task2Promise(dataDelete(filters)) 
+    resolve: (_, filters) => task2Promise(dataDelete(filters))
   });
 
   const gqlDataQueries = registry => new graphql.GraphQLObjectType({
