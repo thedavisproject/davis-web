@@ -58,12 +58,13 @@ module.exports = ({
     type: getType('Job', registry),
     args: {
       dataSet: { type: new graphql.GraphQLNonNull(graphql.GraphQLInt) },
-      fileId: { type: new graphql.GraphQLNonNull(graphql.GraphQLString) }
+      fileId: { type: new graphql.GraphQLNonNull(graphql.GraphQLString) },
+      schema: { type: new graphql.GraphQLNonNull(graphql.GraphQLJSON) }
     },
-    resolve: (_, {dataSet, fileId}) => {
+    resolve: (_, {dataSet, schema, fileId}) => {
       const filePath = `${config.upload.path}/${fileId}`;
 
-      return task2Promise(importJob.queue(dataSet, filePath, jobQueue));
+      return task2Promise(importJob.queue(dataSet, schema, filePath, jobQueue));
     }
   });
 
