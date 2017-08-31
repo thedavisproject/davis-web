@@ -46,12 +46,6 @@ module.exports = ({
 
   const gqlEntityCreate = registry => new graphql.GraphQLUnionInputType({
     name: 'EntityCreate',
-    inputTypes: [
-      getType('FolderCreate', registry),
-      getType('DataSetCreate', registry),
-      getType('VariableCreate', registry),
-      getType('AttributeCreate', registry)
-    ],
     typeKey: 'entityType',
     resolveType: function(type){
       if(type === folder.entityType){
@@ -71,12 +65,6 @@ module.exports = ({
 
   const gqlEntityUpdate = registry => new graphql.GraphQLUnionInputType({
     name: 'EntityUpdate',
-    inputTypes: [
-      getType('FolderUpdate', registry),
-      getType('DataSetUpdate', registry),
-      getType('VariableUpdate', registry),
-      getType('AttributeUpdate', registry)
-    ],
     typeKey: 'entityType',
     resolveType: function(type){
       if(type === folder.entityType){
