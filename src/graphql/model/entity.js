@@ -15,13 +15,13 @@ module.exports = ({
   };
 
   const entityCreateFields = {
-    entityType : { type : new graphql.GraphQLNonNull(graphql.GraphQLString) },
+    entityType : { type : graphql.GraphQLString },
     name       : { type : new graphql.GraphQLNonNull(graphql.GraphQLString) }
   };
 
   const entityUpdateFields = {
     id         : { type : new graphql.GraphQLNonNull(graphql.GraphQLInt) },
-    entityType : { type : new graphql.GraphQLNonNull(graphql.GraphQLString) },
+    entityType : { type : graphql.GraphQLString },
     name       : { type : graphql.GraphQLString }
   };
 
@@ -44,50 +44,10 @@ module.exports = ({
     }
   });
 
-  const gqlEntityCreate = registry => new graphql.GraphQLUnionInputType({
-    name: 'EntityCreate',
-    typeKey: 'entityType',
-    resolveType: function(type){
-      if(type === folder.entityType){
-        return getType('FolderCreate', registry);
-      }
-      if(type === dataSet.entityType){
-        return getType('DataSetCreate', registry);
-      }
-      if(type === variable.entityType){
-        return getType('VariableCreate', registry);
-      }
-      if(type === attribute.entityType){
-        return getType('AttributeCreate', registry);
-      }
-    }
-  });
-
-  const gqlEntityUpdate = registry => new graphql.GraphQLUnionInputType({
-    name: 'EntityUpdate',
-    typeKey: 'entityType',
-    resolveType: function(type){
-      if(type === folder.entityType){
-        return getType('FolderUpdate', registry);
-      }
-      if(type === dataSet.entityType){
-        return getType('DataSetUpdate', registry);
-      }
-      if(type === variable.entityType){
-        return getType('VariableUpdate', registry);
-      }
-      if(type === attribute.entityType){
-        return getType('AttributeUpdate', registry);
-      }
-    }
-  });
-
   return {
     entityFields,
     entityCreateFields,
     entityUpdateFields,
-    gqlEntity,
-    gqlEntityCreate,
-    gqlEntityUpdate
+    gqlEntity
   };
 };

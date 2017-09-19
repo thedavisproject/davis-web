@@ -60,36 +60,118 @@ module.exports = ({
     }
   });
 
+  const entityMutate = mutateFn => entityType => R.pipe(
+    R.map(R.assoc('entityType', entityType)),
+    mutateFn,
+    task2Promise);
+
+  const entityCreate = entityMutate(entityRepository.create);
+  const entityUpdate = entityMutate(entityRepository.update);
+
+  const entityGraphQLMutate = (gqlInputType, gqlOutputType, parameterName, resolveFn) => {
+    const config = {
+      type: new graphql.GraphQLList(gqlOutputType),
+      args: {},
+      resolve: (_, args) => resolveFn(args[parameterName])
+    };
+
+    config.args[parameterName] = { type: new graphql.GraphQLList(gqlInputType) };
+
+    return config;
+  };
+
+  const gqlEntityCreate = registry => new graphql.GraphQLObjectType({
+    name: 'EntityCreate',
+    fields: {
+      folders: entityGraphQLMutate(
+        getType('FolderCreate', registry), 
+        getType('Folder', registry),
+        'folders',
+        entityCreate(folder.entityType)),
+
+      dataSets: entityGraphQLMutate(
+        getType('DataSetCreate', registry), 
+        getType('DataSet', registry),
+        'dataSets',
+        entityCreate(dataSet.entityType)),
+
+      variables: entityGraphQLMutate(
+        getType('VariableCreate', registry), 
+        getType('Variable', registry),
+        'variables',
+        entityCreate(variable.entityType)),
+
+      attributes: entityGraphQLMutate(
+        getType('AttributeCreate', registry), 
+        getType('Attribute', registry),
+        'attributes',
+        entityCreate(attribute.entityType))
+    }
+  });
+
+  const gqlEntityUpdate = registry => new graphql.GraphQLObjectType({
+    name: 'EntityUpdate',
+    fields: {
+      folders: entityGraphQLMutate(
+        getType('FolderUpdate', registry), 
+        getType('Folder', registry),
+        'folders',
+        entityUpdate(folder.entityType)),
+
+      dataSets: entityGraphQLMutate(
+        getType('DataSetUpdate', registry), 
+        getType('DataSet', registry),
+        'dataSets',
+        entityUpdate(dataSet.entityType)),
+      
+      variables: entityGraphQLMutate(
+        getType('VariableUpdate', registry), 
+        getType('Variable', registry),
+        'variables',
+        entityUpdate(variable.entityType)),
+      
+      attributes: entityGraphQLMutate(
+        getType('AttributeUpdate', registry), 
+        getType('Attribute', registry),
+        'attributes',
+        entityUpdate(attribute.entityType))
+    }
+  });
+
+  const entityGraphQLDelete = entityType => {
+    return {
+      type: graphql.GraphQLBoolean,
+      args: {
+        ids: { type : new graphql.GraphQLList(graphql.GraphQLInt) }
+      },
+      resolve: (_, {ids}) => task2Promise(entityRepository.delete(entityType, ids))
+    }
+  };
+
+  const gqlEntityDelete = registry => new graphql.GraphQLObjectType({
+    name: 'EntityDelete',
+    fields: {
+      folders: entityGraphQLDelete(folder.entityType),
+      dataSets: entityGraphQLDelete(dataSet.entityType),
+      variables: entityGraphQLDelete(variable.entityType),
+      attributes: entityGraphQLDelete(attribute.entityType),
+    }
+  });
+
   const gqlEntityMutation = registry => new graphql.GraphQLObjectType({
     name: 'EntityMutation',
     fields: {
-      create: {
-        type: new graphql.GraphQLList(getType('Entity', registry)),
-        args: {
-          entities: { type: new graphql.GraphQLList(getType('EntityCreate', registry)) }
-        },
-        resolve: (_, {entities}) => task2Promise(entityRepository.create(entities))
-      },
-      update: {
-        type: new graphql.GraphQLList(getType('Entity', registry)),
-        args: {
-          entities: { type: new graphql.GraphQLList(getType('EntityUpdate', registry)) }
-        },
-        resolve: (_, {entities}) => task2Promise(entityRepository.update(entities))
-      },
-      delete: {
-        type: graphql.GraphQLBoolean,
-        args: {
-          entityType : { type : graphql.GraphQLString },
-          ids        : { type : new graphql.GraphQLList(graphql.GraphQLInt) }
-        },
-        resolve: (_, {entityType, ids}) => task2Promise(entityRepository.delete(entityType, ids))
-      }
+      create: { type: getType('EntityCreate', registry), resolve: () => ({}) },
+      update: { type: getType('EntityUpdate', registry), resolve: () => ({}) },
+      delete: { type: getType('EntityDelete', registry), resolve: () => ({}) }
     }
   });
 
   return {
     gqlEntityQuery,
+    gqlEntityCreate,
+    gqlEntityUpdate,
+    gqlEntityDelete,
     gqlEntityMutation
   };
 };
