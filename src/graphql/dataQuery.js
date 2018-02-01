@@ -59,12 +59,12 @@ module.exports = ({
     args: {
       dataSet: { type: new graphql.GraphQLNonNull(graphql.GraphQLInt) },
       fileId: { type: new graphql.GraphQLNonNull(graphql.GraphQLString) },
-      schema: { type: new graphql.GraphQLNonNull(graphql.GraphQLJSON) }
+      columnMappings: { type: new graphql.GraphQLNonNull(graphql.GraphQLJSON) }
     },
-    resolve: (_, {dataSet, schema, fileId}) => {
+    resolve: (_, {dataSet, columnMappings, fileId}) => {
       const filePath = `${config.upload.path}/${fileId}`;
 
-      return task2Promise(importJob.queue(dataSet, schema, filePath, jobQueue));
+      return task2Promise(importJob.queue(dataSet, columnMappings, filePath, jobQueue));
     }
   });
 
