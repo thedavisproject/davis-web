@@ -18,7 +18,7 @@ module.exports = ({
         args: {
           target: { type: new graphql.GraphQLNonNull(graphql.GraphQLString )}
         },
-        resolve: (_, { target }) => task2Promise(publishJob.queue(target, jobQueue))
+        resolve: (_, { target }) => task2Promise(publishJob.queue({target}, jobQueue))
       }
     })
   });

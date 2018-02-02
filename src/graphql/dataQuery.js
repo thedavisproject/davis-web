@@ -81,12 +81,18 @@ module.exports = ({
     args: {
       dataSet: { type: new graphql.GraphQLNonNull(graphql.GraphQLInt) },
       fileId: { type: new graphql.GraphQLNonNull(graphql.GraphQLString) },
-      columnMappings: { type: new graphql.GraphQLNonNull(graphql.GraphQLJSON) }
+      columnMappings: { type: new graphql.GraphQLNonNull(graphql.GraphQLJSON) },
+      createMissingAttributes: {
+        type: graphql.GraphQLBoolean,
+        defaultValue: false
+      }
     },
-    resolve: (_, {dataSet, columnMappings, fileId}) => {
+    resolve: (_, {dataSet, columnMappings, fileId, createMissingAttributes}) => {
       const filePath = `${config.upload.path}/${fileId}`;
 
-      return task2Promise(importJob.queue(dataSet, columnMappings, filePath, jobQueue));
+      return task2Promise(importJob.queue({
+        dataSet, columnMappings, filePath, createMissingAttributes
+      }, jobQueue));
     }
   });
 
