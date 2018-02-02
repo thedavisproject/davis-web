@@ -7,10 +7,10 @@ module.exports = ({
   graphql_entityResolver: { resolveEntityFromId }
 }) => {
 
-  const gqlAttributeMatch = registry => new graphql.GraphQLObjectType({
-    name: 'AttributeMatch',
+  const gqlValueMatch = registry => new graphql.GraphQLObjectType({
+    name: 'ValueMatch',
     fields: () => ({
-      key: { type: graphql.GraphQLString },
+      value: { type: graphql.GraphQLString },
       match: { type: graphql.GraphQLBoolean }, 
       attribute: {
         type: getType('Attribute', registry),
@@ -28,15 +28,15 @@ module.exports = ({
         type: getType('Variable', registry),
         resolve: resolveEntityFromId('variable', variable.entityType)
       },
-      attributes: {
-        type: new graphql.GraphQLList(getType('AttributeMatch', registry))
+      values: {
+        type: new graphql.GraphQLList(getType('ValueMatch', registry))
       }
     })
   });
 
 
   return {
-    gqlAttributeMatch,
+    gqlValueMatch,
     gqlVariableMatch
   };
 };

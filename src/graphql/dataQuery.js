@@ -46,11 +46,15 @@ module.exports = ({
     type: new graphql.GraphQLList(getType('VariableMatch', registry)),
     args: {
       dataSet: { type: new graphql.GraphQLNonNull(graphql.GraphQLInt) },
-      fileId: { type: new graphql.GraphQLNonNull(graphql.GraphQLString) }
+      fileId: { type: new graphql.GraphQLNonNull(graphql.GraphQLString) },
+      valueLimit: { 
+        type: graphql.GraphQLInt,
+        defaultValue: 0
+      }
     },
-    resolve: (_, {dataSet, fileId}) => {
+    resolve: (_, {dataSet, fileId, valueLimit}) => {
       const filePath = `${config.upload.path}/${fileId}`;
-      return task2Promise(dataAnalyze(dataSet, parseDataFile(filePath)));
+      return task2Promise(dataAnalyze(dataSet, parseDataFile(filePath), { limit: valueLimit}));
     }
   });
 
@@ -59,12 +63,16 @@ module.exports = ({
     args: {
       dataSet: { type: new graphql.GraphQLNonNull(graphql.GraphQLInt) },
       fileId: { type: new graphql.GraphQLNonNull(graphql.GraphQLString) },
-      column: { type: new graphql.GraphQLNonNull(graphql.GraphQLString) }
+      column: { type: new graphql.GraphQLNonNull(graphql.GraphQLString) },
+      valueLimit: { 
+        type: graphql.GraphQLInt,
+        defaultValue: 0
+      }
     },
-    resolve: (_, {dataSet, fileId, column}) => {
+    resolve: (_, {dataSet, fileId, column, valueLimit}) => {
       const filePath = `${config.upload.path}/${fileId}`;
       return task2Promise(
-        dataAnalyze(dataSet, parseDataFile(filePath), column).map(r => r[0]));
+        dataAnalyze(dataSet, parseDataFile(filePath), {column, limit: valueLimit}).map(r => r[0]));
     }
   });
 
