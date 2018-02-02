@@ -54,6 +54,20 @@ module.exports = ({
     }
   });
 
+  const gqlDataAnalyzeColumn = registry => ({
+    type: getType('VariableMatch', registry),
+    args: {
+      dataSet: { type: new graphql.GraphQLNonNull(graphql.GraphQLInt) },
+      fileId: { type: new graphql.GraphQLNonNull(graphql.GraphQLString) },
+      column: { type: new graphql.GraphQLNonNull(graphql.GraphQLString) }
+    },
+    resolve: (_, {dataSet, fileId, column}) => {
+      const filePath = `${config.upload.path}/${fileId}`;
+      return task2Promise(
+        dataAnalyze(dataSet, parseDataFile(filePath), column).map(r => r[0]));
+    }
+  });
+
   const gqlDataImport = registry => ({
     type: getType('Job', registry),
     args: {
@@ -91,7 +105,8 @@ module.exports = ({
     name: 'DataQuery',
     fields: {
       query: gqlDataQuery(registry),
-      analyze: gqlDataAnalyze(registry)
+      analyze: gqlDataAnalyze(registry),
+      analyzeColumn: gqlDataAnalyzeColumn(registry)
     }
   });
 
