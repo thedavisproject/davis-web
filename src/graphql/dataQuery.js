@@ -1,3 +1,4 @@
+const R = require('ramda');
 const Task = require('data.task');
 const Async = require('control.async')(Task);
 const when = require('when');
@@ -47,7 +48,7 @@ module.exports = ({
     args: {
       dataSet: { type: new graphql.GraphQLNonNull(graphql.GraphQLInt) },
       fileId: { type: new graphql.GraphQLNonNull(graphql.GraphQLString) },
-      valueLimit: { 
+      valueLimit: {
         type: graphql.GraphQLInt,
         defaultValue: 0
       }
@@ -64,7 +65,7 @@ module.exports = ({
       dataSet: { type: new graphql.GraphQLNonNull(graphql.GraphQLInt) },
       fileId: { type: new graphql.GraphQLNonNull(graphql.GraphQLString) },
       column: { type: new graphql.GraphQLNonNull(graphql.GraphQLString) },
-      valueLimit: { 
+      valueLimit: {
         type: graphql.GraphQLInt,
         defaultValue: 0
       }
@@ -81,7 +82,8 @@ module.exports = ({
     args: {
       dataSet: { type: new graphql.GraphQLNonNull(graphql.GraphQLInt) },
       fileId: { type: new graphql.GraphQLNonNull(graphql.GraphQLString) },
-      columnMappings: { type: new graphql.GraphQLNonNull(graphql.GraphQLJSON) },
+      columnMappings: { type: new graphql.GraphQLNonNull(
+        new graphql.GraphQLList(getType('DataImportColumnMapping', registry))) },
       createMissingAttributes: {
         type: graphql.GraphQLBoolean,
         defaultValue: false
@@ -90,8 +92,15 @@ module.exports = ({
     resolve: (_, {dataSet, columnMappings, fileId, createMissingAttributes}) => {
       const filePath = `${config.upload.path}/${fileId}`;
 
+      const mappingsAsMap = thread(columnMappings,
+        R.indexBy(R.prop('column')),
+        R.map(m => m.variable));
+
       return task2Promise(importJob.queue({
-        dataSet, columnMappings, filePath, createMissingAttributes
+        dataSet,
+        columnMappings: mappingsAsMap,
+        filePath,
+        createMissingAttributes
       }, jobQueue));
     }
   });

@@ -74,6 +74,14 @@ module.exports = ({
     }
   });
 
+  const gqlDataImportColumnMapping = registry => new graphql.GraphQLInputObjectType({
+    name: 'DataImportColumnMapping',
+    fields: {
+      column   : { type : new graphql.GraphQLNonNull(graphql.GraphQLString) },
+      variable : { type : new graphql.GraphQLNonNull(graphql.GraphQLInt) }
+    }
+  });
+
   const gqlDataSetQueryResults = registry => new graphql.GraphQLObjectType({
     name: 'DataSetQueryResults',
     fields: {
@@ -93,6 +101,7 @@ module.exports = ({
     gqlNumericalFact,
     gqlTextFact,
     gqlIndividual,
-    gqlDataSetQueryResults
+    gqlDataSetQueryResults,
+    gqlDataImportColumnMapping
   };
 };
