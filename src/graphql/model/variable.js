@@ -47,7 +47,7 @@ module.exports = ({
   const gqlVariableCreate = registry => new graphql.GraphQLInputObjectType({
     name: 'VariableCreate',
     fields: () => Object.assign({}, entityCreateFields, {
-      type         : { type: getType('VariableType', registry)},
+      type         : { type : new graphql.GraphQLNonNull(getType('VariableType', registry))},
       key          : { type : graphql.GraphQLString },
       scopedDatSet : { type : graphql.GraphQLInt },
       format       : { type : graphql.GraphQLJSON }

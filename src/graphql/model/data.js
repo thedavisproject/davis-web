@@ -74,7 +74,7 @@ module.exports = ({
     }
   });
 
-  const gqlDataImportColumnMapping = registry => new graphql.GraphQLInputObjectType({
+  const gqlDataImportColumnMapping = registryIgnored => new graphql.GraphQLInputObjectType({
     name: 'DataImportColumnMapping',
     fields: {
       column   : { type : new graphql.GraphQLNonNull(graphql.GraphQLString) },
