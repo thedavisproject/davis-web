@@ -15,7 +15,8 @@ module.exports = {
     },
     entityQuery: require('./src/graphql/entityQuery'),
     dataQuery: require('./src/graphql/dataQuery'),
-    publish: require('./src/graphql/publish')
+    publish: require('./src/graphql/publish'),
+    login: require('./src/graphql/login')
   },
   fileUploader: require('./src/fileUploader'),
   dataExport: require('./src/dataExport'),
