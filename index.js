@@ -21,7 +21,7 @@ module.exports = {
   fileUploader: require('./src/fileUploader'),
   dataExport: require('./src/dataExport'),
   expressErrorHandler: require('./src/expressErrorHandler'),
-  passport: {
-    basic: require('./src/passportBasic')
+  middleware: {
+    authentication: require('./src/middleware/authentication')
   }
 };
