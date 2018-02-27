@@ -10,7 +10,9 @@ module.exports = ({
   config
 }) => {
 
-  const decode = crypto.decode(config.crypto.encryptionKey, config.crypto.validationKey);
+  const decode = crypto.decode(
+    new Buffer(config.crypto.encryptionKey, 'hex'),
+    new Buffer(config.crypto.validationKey, 'hex'));
 
   return (req, res, next) => {
 
