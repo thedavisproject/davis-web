@@ -1,4 +1,3 @@
-const BearerStrategy = require('passport-http-bearer');
 const shared = require('davis-shared');
 const {crypto, fp} = shared;
 const {either2Task, thread} = fp;
