@@ -32,13 +32,7 @@ module.exports = ({
 
   const generateToken = u => encode({ userId: u.id });
 
-  const gqlLogin = {
-    type: graphql.GraphQLString,
-    args: {
-      email: { type: new graphql.GraphQLNonNull(graphql.GraphQLString )},
-      password: { type: new graphql.GraphQLNonNull(graphql.GraphQLString )}
-    },
-    resolve: (_, { email, password }) => task2Promise(
+  const login = (email, password) =>
       // Query for the user by email
       entityRepository.query(user.entityType, q.eq('email', email))
         // Validate that a user is returned
@@ -46,10 +40,20 @@ module.exports = ({
         // Check the password
         .chain(validatePassword(password))
         // Generate an auth token for this user
-        .map(generateToken))
+        .map(generateToken);
+
+  const gqlLogin = {
+    type: graphql.GraphQLString,
+    args: {
+      email: { type: new graphql.GraphQLNonNull(graphql.GraphQLString )},
+      password: { type: new graphql.GraphQLNonNull(graphql.GraphQLString )}
+    },
+    resolve: (_, { email, password }) =>
+      task2Promise(login(email, password))
   };
 
   return {
+    login,
     gqlLogin
   };
 };
