@@ -1,18 +1,9 @@
 const shared = require('davis-shared');
-const {crypto, fp} = shared;
-const {either2Task, thread} = fp;
-const model = require('davis-model');
-const { user } = model;
-const R = require('ramda');
+const {thread} = shared.fp;
 
 module.exports = ({
-  entityRepository,
-  config
+  userAuthentication: {userByToken}
 }) => {
-
-  const decode = crypto.decode(
-    new Buffer(config.crypto.encryptionKey, 'hex'),
-    new Buffer(config.crypto.validationKey, 'hex'));
 
   return (req, res, next) => {
 
@@ -23,29 +14,26 @@ module.exports = ({
         const token = match[1];
 
         thread(token,
-          decode,
-          either2Task,
-          R.chain(({userId}) => entityRepository.queryById(user.entityType, userId)),
+          userByToken,
           results => {
-            results.fork(function(error) {
+            results.fork(function(errorIgnored) {
               res.status(400);
-              res.send('Authentication error. Bad token.');
+              return res.send('Authentication error. Bad token.');
             },
-              function(users) {
-
-                if (users.length === 0) {
-                  // TODO: Log bad user error
-                  res.status(400);
-                  res.send('Authentication error. Bad token.');
-                }
-
-                req.context = {
-                  user: users[0]
-                };
+              function(user) {
+                req.context = req.context || {};
+                req.context.user = user;
+                return next();
               });
           });
       }
+      else{
+        res.status(400);
+        return res.send('Authentication error. Bad token.');
+      }
     }
-    next();
+    else {
+      return next();
+    }
   };
 };

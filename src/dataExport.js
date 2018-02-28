@@ -6,7 +6,7 @@ module.exports = ({
   expressErrorHandler:  { handleError }
 }) => {
 
-  function exportHandler(req, res){
+  return (req, res) => {
 
     const dataSetIds = req.params.dataSetIds.split(',').map(x => +x);
     const resolvedFilters = queryFilters.deSerialize(req.query);
@@ -28,10 +28,5 @@ module.exports = ({
         });
         zip.finalize();
       });
-  }
-
-  return (route, app) => {
-    app.get(route, exportHandler);
-    app.get(`${route}/:dataSetIds`, exportHandler);
   };
 };

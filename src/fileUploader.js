@@ -11,7 +11,7 @@ module.exports = ({
     app.post(route,
       upload.any(),
       function(req, res){
-        
+
         if(req.files.length < 1){
           res.status(400).send('Error: No file attached');
         }

@@ -22,6 +22,7 @@ module.exports = {
   dataExport: require('./src/dataExport'),
   expressErrorHandler: require('./src/expressErrorHandler'),
   middleware: {
+    initContext: require('./src/middleware/initContext'),
     authentication: require('./src/middleware/authentication')
   }
 };
