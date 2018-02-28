@@ -37,11 +37,10 @@ module.exports = ({
       type: new graphql.GraphQLList(gqlType),
       args: {
         query: {
-          type : graphql.GraphQLJSON,
-          defaultValue: []
+          type : graphql.GraphQLJSON
         }
       },
-      resolve: (_, {query}) => {
+      resolve: (_, {query = []}) => {
         return task2Promise(entityRepository.query(entityType, query));
       }
     };
