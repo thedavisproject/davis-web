@@ -1,18 +1,22 @@
-const R = require('ramda');
 const model = require('davis-model');
 const { dataSet, folder, variable, attribute } = model;
-const q = model.query.build;
-const Task = require('data.task');
-const Async = require('control.async')(Task);
-const when = require('when');
-const task2Promise = Async.toPromise(when.promise);
 const { getType } = require('./typeRegistry');
-const shared = require('davis-shared');
-const {thread} = shared.fp;
 
 module.exports = ({
-  entityRepository,
-  graphql
+  graphql,
+  resolver_entity: {
+    resolveEntityIndividualQuery,
+    resolveEntityQuery,
+    resolveFolderCreate,
+    resolveDataSetCreate,
+    resolveVariableCreate,
+    resolveAttributeCreate,
+    resolveFolderUpdate,
+    resolveDataSetUpdate,
+    resolveVariableUpdate,
+    resolveAttributeUpdate,
+    resolveEntityDelete
+  }
 }) => {
 
   function entityIndividualGraphQLQuery(gqlType, entityType){
@@ -23,12 +27,7 @@ module.exports = ({
           type : new graphql.GraphQLNonNull(graphql.GraphQLInt)
         }
       },
-      resolve: (_, {id}) => {
-        const queryExp = q.eq('id', id);
-        return task2Promise(
-          entityRepository.query(entityType, queryExp)
-            .map(results => R.isNil(results) || results.length < 1 ? null : results[0]));
-      }
+      resolve: (_, args) => resolveEntityIndividualQuery(entityType, args)
     };
   }
 
@@ -40,9 +39,7 @@ module.exports = ({
           type : graphql.GraphQLJSON
         }
       },
-      resolve: (_, {query = []}) => {
-        return task2Promise(entityRepository.query(entityType, query));
-      }
+      resolve: (_, args) => resolveEntityQuery(entityType, args)
     };
   }
 
@@ -60,14 +57,6 @@ module.exports = ({
     }
   });
 
-  const entityMutate = mutateFn => entityType => R.pipe(
-    R.map(R.assoc('entityType', entityType)),
-    mutateFn,
-    task2Promise);
-
-  const entityCreate = entityMutate(entityRepository.create);
-  const entityUpdate = entityMutate(entityRepository.update);
-
   const entityGraphQLMutate = (gqlInputType, gqlOutputType, parameterName, resolveFn) => {
     const config = {
       type: new graphql.GraphQLList(gqlOutputType),
@@ -80,22 +69,6 @@ module.exports = ({
     return config;
   };
 
-  const applyEntityConstructor = R.curry((ctr, parameterNames, partialEntity) => {
-    if(partialEntity.id){
-      throw new Error(`Entity ID must not be supplied for CREATE action: ${partialEntity}`);
-    }
-
-    const ctrParams = R.props(parameterNames, partialEntity);
-    const additionalParams = R.omit(parameterNames, partialEntity);
-
-    const args = [null, ...ctrParams, additionalParams];
-    return ctr.apply(null, args);
-  });
-
-  // Make the variable constructor generic to type
-  const variableCtr = variableType => (id, name, props) =>
-    variable.new(id, name, variableType, props);
-
   const gqlEntityCreate = registry => new graphql.GraphQLObjectType({
     name: 'EntityCreate',
     fields: {
@@ -103,34 +76,25 @@ module.exports = ({
         getType('FolderCreate', registry),
         getType('Folder', registry),
         'folders',
-        R.pipe(
-          R.map(applyEntityConstructor(folder.new, ['name'])),
-          entityCreate(folder.entityType))),
+        resolveFolderCreate),
 
       dataSets: entityGraphQLMutate(
         getType('DataSetCreate', registry),
         getType('DataSet', registry),
         'dataSets',
-        R.pipe(
-          R.map(applyEntityConstructor(dataSet.new, ['name'])),
-          entityCreate(dataSet.entityType))),
+        resolveDataSetCreate),
 
       variables: entityGraphQLMutate(
         getType('VariableCreate', registry),
         getType('Variable', registry),
         'variables',
-        partialEntity =>
-        thread(partialEntity,
-          R.map(applyEntityConstructor(variableCtr(partialEntity.type), ['name'])),
-          entityCreate(variable.entityType))),
+        resolveVariableCreate),
 
       attributes: entityGraphQLMutate(
         getType('AttributeCreate', registry),
         getType('Attribute', registry),
         'attributes',
-        R.pipe(
-          R.map(applyEntityConstructor(attribute.new, ['name', 'variable'])),
-          entityCreate(attribute.entityType)))
+        resolveAttributeCreate)
     }
   });
 
@@ -141,25 +105,25 @@ module.exports = ({
         getType('FolderUpdate', registry),
         getType('Folder', registry),
         'folders',
-        entityUpdate(folder.entityType)),
+        resolveFolderUpdate),
 
       dataSets: entityGraphQLMutate(
         getType('DataSetUpdate', registry),
         getType('DataSet', registry),
         'dataSets',
-        entityUpdate(dataSet.entityType)),
+        resolveDataSetUpdate),
 
       variables: entityGraphQLMutate(
         getType('VariableUpdate', registry),
         getType('Variable', registry),
         'variables',
-        entityUpdate(variable.entityType)),
+        resolveVariableUpdate),
 
       attributes: entityGraphQLMutate(
         getType('AttributeUpdate', registry),
         getType('Attribute', registry),
         'attributes',
-        entityUpdate(attribute.entityType))
+        resolveAttributeUpdate)
     }
   });
 
@@ -169,7 +133,7 @@ module.exports = ({
       args: {
         ids: { type : new graphql.GraphQLList(graphql.GraphQLInt) }
       },
-      resolve: (_, {ids}) => task2Promise(entityRepository.delete(entityType, ids))
+      resolve: (_, args) => resolveEntityDelete(entityType, args)
     };
   };
 

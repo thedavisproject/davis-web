@@ -1,23 +1,14 @@
-const R = require('ramda');
-const Task = require('data.task');
-const Async = require('control.async')(Task);
-const when = require('when');
-const task2Promise = Async.toPromise(when.promise);
 const { getType } = require('./typeRegistry');
-const shared = require('davis-shared');
-const {thread} = shared.fp;
-const {isNilOrEmpty} = shared.string;
-const queryString = require('../queryString');
 
 module.exports = ({
   graphql,
-  dataQuery,
-  dataAnalyze,
-  dataDelete,
-  jobQueue,
-  importJob,
-  config,
-  parseDataFile
+  resolver_data: {
+    resolveDataQuery,
+    resolveDataAnalyze,
+    resolveDataAnalyzeColumn,
+    resolveDataImport,
+    resolveDataDelete
+  }
 }) => {
 
   const gqlDataQuery = registry => ({
@@ -32,15 +23,7 @@ module.exports = ({
         defaultValue: ''
       }
     },
-    resolve: (_, {dataSets, q}) => {
-
-      const filters = isNilOrEmpty(q) ? [] :
-        thread(q,
-        queryString.stringToMap,
-        queryString.queryFilters.deSerialize);
-
-      return task2Promise(dataQuery(filters, dataSets));
-    }
+    resolve: (_, args) => resolveDataQuery(args)
   });
 
   const gqlDataAnalyze = registry => ({
@@ -53,10 +36,7 @@ module.exports = ({
         defaultValue: 0
       }
     },
-    resolve: (_, {dataSet, fileId, valueLimit}) => {
-      const filePath = `${config.upload.path}/${fileId}`;
-      return task2Promise(dataAnalyze(dataSet, parseDataFile(filePath), { limit: valueLimit}));
-    }
+    resolve: (_, args) => resolveDataAnalyze(args)
   });
 
   const gqlDataAnalyzeColumn = registry => ({
@@ -70,11 +50,7 @@ module.exports = ({
         defaultValue: 0
       }
     },
-    resolve: (_, {dataSet, fileId, column, valueLimit}) => {
-      const filePath = `${config.upload.path}/${fileId}`;
-      return task2Promise(
-        dataAnalyze(dataSet, parseDataFile(filePath), {column, limit: valueLimit}).map(r => r[0]));
-    }
+    resolve: (_, args) => resolveDataAnalyzeColumn(args)
   });
 
   const gqlDataImport = registry => ({
@@ -89,20 +65,7 @@ module.exports = ({
         defaultValue: false
       }
     },
-    resolve: (_, {dataSet, columnMappings, fileId, createMissingAttributes}) => {
-      const filePath = `${config.upload.path}/${fileId}`;
-
-      const mappingsAsMap = thread(columnMappings,
-        R.indexBy(R.prop('column')),
-        R.map(m => m.variable));
-
-      return task2Promise(importJob.queue({
-        dataSet,
-        columnMappings: mappingsAsMap,
-        filePath,
-        createMissingAttributes
-      }, jobQueue));
-    }
+    resolve: (_, args) => resolveDataImport(args)
   });
 
   const gqlDataDelete = registryIgnored => ({
@@ -121,7 +84,7 @@ module.exports = ({
         defaultValue: []
       }
     },
-    resolve: (_, filters) => task2Promise(dataDelete(filters))
+    resolve: (_, args) => resolveDataDelete(args)
   });
 
   const gqlDataQueries = registry => new graphql.GraphQLObjectType({

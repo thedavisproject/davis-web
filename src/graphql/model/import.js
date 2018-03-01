@@ -4,14 +4,14 @@ const { getType } = require('../typeRegistry');
 
 module.exports = ({
   graphql,
-  graphql_entityResolver: { resolveEntityFromId }
+  resolver_entity: { resolveEntityFromId }
 }) => {
 
   const gqlValueMatch = registry => new graphql.GraphQLObjectType({
     name: 'ValueMatch',
     fields: () => ({
       value: { type: graphql.GraphQLString },
-      match: { type: graphql.GraphQLBoolean }, 
+      match: { type: graphql.GraphQLBoolean },
       attribute: {
         type: getType('Attribute', registry),
         resolve: resolveEntityFromId('attribute', attribute.entityType)
@@ -23,7 +23,7 @@ module.exports = ({
     name: 'VariableMatch',
     fields: () => ({
       key: { type: graphql.GraphQLString },
-      match: { type: graphql.GraphQLBoolean }, 
+      match: { type: graphql.GraphQLBoolean },
       variable: {
         type: getType('Variable', registry),
         resolve: resolveEntityFromId('variable', variable.entityType)

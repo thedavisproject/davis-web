@@ -1,17 +1,14 @@
 const model = require('davis-model');
-const { dataSet, attribute, variable } = model;
-const q = model.query.build;
-const Task = require('data.task');
-const Async = require('control.async')(Task);
-const when = require('when');
-const task2Promise = Async.toPromise(when.promise);
+const { dataSet, variable } = model;
 const { getType } = require('../typeRegistry');
 
 module.exports = ({
-  entityRepository,
   graphql,
   graphql_entity: { entityFields, entityCreateFields, entityUpdateFields },
-  graphql_entityResolver: { resolveEntityFromId }
+  resolver_entity: {
+    resolveEntityFromId,
+    resolveAttributesFromVariable
+  }
 }) => {
 
   const gqlVariableTypeEnum = registryIgnored => new graphql.GraphQLEnumType({
@@ -37,9 +34,7 @@ module.exports = ({
       },
       attributes: {
         type : new graphql.GraphQLList(getType('Attribute', registry)),
-        resolve: ({id}) => task2Promise(entityRepository.query(
-          attribute.entityType,
-          q.eq('variable', id)))
+        resolve: ({id}) => resolveAttributesFromVariable(id)
       }
     })
   });

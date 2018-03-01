@@ -4,7 +4,7 @@ const { getType } = require('../typeRegistry');
 
 module.exports = ({
   graphql,
-  graphql_entityResolver: { resolveEntityFromId }
+  resolver_entity: { resolveEntityFromId }
 }) => {
 
   const factFields = registry => ({

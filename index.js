@@ -1,7 +1,5 @@
 module.exports = {
   graphql: {
-    entityLoaderFactory: require('./src/graphql/entityLoaderFactory'),
-    entityResolver: require('./src/graphql/entityResolver'),
     typeRegistry: require('./src/graphql/typeRegistry'),
     model: {
       entity: require('./src/graphql/model/entity'),
@@ -13,10 +11,18 @@ module.exports = {
       import: require('./src/graphql/model/import'),
       job: require('./src/graphql/model/bullJob')
     },
-    entityQuery: require('./src/graphql/entityQuery'),
+    authentication: require('./src/graphql/authentication'),
     dataQuery: require('./src/graphql/dataQuery'),
-    publish: require('./src/graphql/publish'),
-    authentication: require('./src/graphql/authentication')
+    entityQuery: require('./src/graphql/entityQuery'),
+    publish: require('./src/graphql/publish')
+  },
+  resolvers: {
+    authenticationResolver: require('./src/resolvers/authenticationResolver'),
+    dataResolver: require('./src/resolvers/dataResolver'),
+    entityLoaderFactory: require('./src/resolvers/entityLoaderFactory'),
+    entityResolver: require('./src/resolvers/entityResolver'),
+    jobResolver: require('./src/resolvers/jobResolver'),
+    publishResolver: require('./src/resolvers/publishResolver')
   },
   fileUploader: require('./src/fileUploader'),
   dataExport: require('./src/dataExport'),

@@ -2,7 +2,7 @@ const { getType } = require('../typeRegistry');
 
 module.exports = ({
   graphql,
-  jobQueue
+  resolver_job: { resolveJob }
 }) => {
 
   const gqlJob = registryIgnored => new graphql.GraphQLObjectType({
@@ -34,7 +34,7 @@ module.exports = ({
     args: {
       id: { type: new graphql.GraphQLNonNull(graphql.GraphQLInt) }
     },
-    resolve: (_, { id }) => jobQueue.getJob(id)
+    resolve: (_, args) => resolveJob(args)
   });
 
   const gqlJobQueries = registry => new graphql.GraphQLObjectType({

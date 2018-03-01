@@ -5,7 +5,7 @@ const { getType } = require('../typeRegistry');
 module.exports = ({
   graphql,
   graphql_entity: { entityFields, entityCreateFields, entityUpdateFields },
-  graphql_entityResolver: { resolveEntityFromId }
+  resolver_entity: { resolveEntityFromId }
 }) => {
 
   const gqlDataSet = registry => new graphql.GraphQLObjectType({
