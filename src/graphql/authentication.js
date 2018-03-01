@@ -5,7 +5,7 @@ const task2Promise = Async.toPromise(when.promise);
 
 module.exports = ({
   graphql,
-  userAuthentication: {login}
+  userAuthentication: {login, userByToken}
 }) => {
 
   const gqlLogin = {
@@ -18,7 +18,24 @@ module.exports = ({
       task2Promise(login(email, password))
   };
 
+  const gqlUserHasGuiAccess = {
+    type: graphql.GraphQLBoolean,
+    args: {
+      token: { type: new graphql.GraphQLNonNull(graphql.GraphQLString )}
+    },
+    resolve: (_, { token }) =>
+      task2Promise(userByToken(token)
+        .map(u => u.admin || u.gui))
+  };
+
+  const gqlAuthentication = registry => new graphql.GraphQLObjectType({
+    name: 'Authentication',
+    fields: {
+      login: gqlLogin,
+      hasGuiAccess: gqlUserHasGuiAccess
+    }
+  });
   return {
-    gqlLogin
+    gqlAuthentication
   };
 };
