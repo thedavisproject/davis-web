@@ -17,9 +17,6 @@ const {folder, dataSet, variable, attribute} = model;
 
 const entityResolverFac = require('../../src/resolvers/entityResolver.js');
 
-const resolver_entityLoaderFactory = { entityLoaderFactory: sinon.stub() };
-resolver_entityLoaderFactory.entityLoaderFactory.returns([]);
-
 describe('Entity Create', function(){
 
   describe('Folder', function(){
@@ -28,8 +25,7 @@ describe('Entity Create', function(){
 
       const entityRepoStub = { create: sinon.stub() };
       const entityResolver = entityResolverFac({
-        entityRepository: entityRepoStub,
-        resolver_entityLoaderFactory
+        entityRepository: entityRepoStub
       });
 
       entityRepoStub.create.returns(Task.of('foo'));
@@ -49,8 +45,7 @@ describe('Entity Create', function(){
 
       const entityRepoStub = { create: sinon.stub() };
       const entityResolver = entityResolverFac({
-        entityRepository: entityRepoStub,
-        resolver_entityLoaderFactory
+        entityRepository: entityRepoStub
       });
 
       entityRepoStub.create.returns(Task.of('foo'));
@@ -66,8 +61,7 @@ describe('Entity Create', function(){
 
       const entityRepoStub = { create: sinon.stub() };
       const entityResolver = entityResolverFac({
-        entityRepository: entityRepoStub,
-        resolver_entityLoaderFactory
+        entityRepository: entityRepoStub
       });
 
       entityRepoStub.create.returns(Task.of('foo'));
@@ -87,8 +81,7 @@ describe('Entity Create', function(){
 
       const entityRepoStub = { create: sinon.stub() };
       const entityResolver = entityResolverFac({
-        entityRepository: entityRepoStub,
-        resolver_entityLoaderFactory
+        entityRepository: entityRepoStub
       });
 
       entityRepoStub.create.returns(Task.of('foo'));
@@ -105,8 +98,7 @@ describe('Entity Create', function(){
 
       const entityRepoStub = { create: sinon.stub() };
       const entityResolver = entityResolverFac({
-        entityRepository: entityRepoStub,
-        resolver_entityLoaderFactory
+        entityRepository: entityRepoStub
       });
 
       entityRepoStub.create.returns(Task.of('foo'));
@@ -130,8 +122,7 @@ describe('Entity Create', function(){
 
       const entityRepoStub = { create: sinon.stub() };
       const entityResolver = entityResolverFac({
-        entityRepository: entityRepoStub,
-        resolver_entityLoaderFactory
+        entityRepository: entityRepoStub
       });
 
       entityRepoStub.create.returns(Task.of('foo'));
@@ -148,8 +139,7 @@ describe('Entity Create', function(){
 
       const entityRepoStub = { create: sinon.stub() };
       const entityResolver = entityResolverFac({
-        entityRepository: entityRepoStub,
-        resolver_entityLoaderFactory
+        entityRepository: entityRepoStub
       });
 
       entityRepoStub.create.returns(Task.of('foo'));
@@ -169,8 +159,7 @@ describe('Entity Create', function(){
 
       const entityRepoStub = { create: sinon.stub() };
       const entityResolver = entityResolverFac({
-        entityRepository: entityRepoStub,
-        resolver_entityLoaderFactory
+        entityRepository: entityRepoStub
       });
 
       entityRepoStub.create.returns(Task.of('foo'));

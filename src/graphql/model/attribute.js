@@ -15,12 +15,12 @@ module.exports = ({
       // Resolve the variable object from the variable ID
       variable: {
         type: getType('Variable', registry),
-        resolve: resolveEntityFromId('variable', variable.entityType)
+        resolve: props => resolveEntityFromId('variable', variable.entityType, props)
       },
       key: { type: graphql.GraphQLString },
       parent: {
         type: getType('Attribute', registry),
-        resolve: resolveEntityFromId('parent', attribute.entityType)
+        resolve: props => resolveEntityFromId('parent', attribute.entityType, props)
       }
     })
   });

@@ -10,7 +10,7 @@ module.exports = ({
   const factFields = registry => ({
     variable: {
       type: getType('Variable', registry),
-      resolve: resolveEntityFromId('variable', variable.entityType)
+      resolve: props => resolveEntityFromId('variable', variable.entityType, props)
     },
     type: { type: getType('VariableType', registry)}
   });
@@ -37,7 +37,7 @@ module.exports = ({
     fields: Object.assign({}, factFields(registry), {
       attribute: {
         type: getType('Attribute', registry),
-        resolve: resolveEntityFromId('attribute', attribute.entityType)
+        resolve: props => resolveEntityFromId('attribute', attribute.entityType, props)
       }
     })
   });
@@ -87,7 +87,7 @@ module.exports = ({
     fields: {
       dataSet:{
         type: getType('DataSet', registry),
-        resolve: resolveEntityFromId('dataSet', dataSet.entityType)
+        resolve: props => resolveEntityFromId('dataSet', dataSet.entityType, props)
       },
       data: {
         type: new graphql.GraphQLList(getType('Individual', registry))

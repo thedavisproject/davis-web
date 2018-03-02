@@ -15,7 +15,7 @@ module.exports = ({
       return Object.assign({}, entityFields, {
         parent: {
           type : getType('Folder', registry),
-          resolve: resolveEntityFromId('parent', folder.entityType)
+          resolve: props => resolveEntityFromId('parent', folder.entityType, props)
         }
       });
     }

@@ -22,7 +22,20 @@ module.exports = {
     entityLoaderFactory: require('./src/resolvers/entityLoaderFactory'),
     entityResolver: require('./src/resolvers/entityResolver'),
     jobResolver: require('./src/resolvers/jobResolver'),
-    publishResolver: require('./src/resolvers/publishResolver')
+    publishResolver: require('./src/resolvers/publishResolver'),
+    authorization: {
+      authorizedAuthenticationResolver:
+        require('./src/resolvers/authorization/authorizedAuthenticationResolver'),
+      authorizedDataResolver:
+        require('./src/resolvers/authorization/authorizedDataResolver'),
+      authorizedEntityResolver:
+        require('./src/resolvers/authorization/authorizedEntityResolver'),
+      authorizedJobResolver:
+        require('./src/resolvers/authorization/authorizedJobResolver'),
+      authorizedPublishResolver:
+        require('./src/resolvers/authorization/authorizedPublishResolver'),
+      rules: require('./src/resolvers/authorization/rules')
+    }
   },
   fileUploader: require('./src/fileUploader'),
   dataExport: require('./src/dataExport'),

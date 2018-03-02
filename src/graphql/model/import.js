@@ -14,7 +14,7 @@ module.exports = ({
       match: { type: graphql.GraphQLBoolean },
       attribute: {
         type: getType('Attribute', registry),
-        resolve: resolveEntityFromId('attribute', attribute.entityType)
+        resolve: props => resolveEntityFromId('attribute', attribute.entityType, props)
       }
     })
   });
@@ -26,7 +26,7 @@ module.exports = ({
       match: { type: graphql.GraphQLBoolean },
       variable: {
         type: getType('Variable', registry),
-        resolve: resolveEntityFromId('variable', variable.entityType)
+        resolve: props => resolveEntityFromId('variable', variable.entityType, props)
       },
       values: {
         type: new graphql.GraphQLList(getType('ValueMatch', registry))

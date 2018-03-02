@@ -8,13 +8,13 @@ const when = require('when');
 const task2Promise = Async.toPromise(when.promise);
 const shared = require('davis-shared');
 const {thread} = shared.fp;
+const entityLoaderFactory = require('./entityLoaderFactory');
 
 module.exports = ({
-  entityRepository,
-  resolver_entityLoaderFactory: entityLoaderFactory
+  entityRepository
 }) => {
 
-  const entityLoaders = entityLoaderFactory([
+  const entityLoaders = entityLoaderFactory(entityRepository, [
     dataSet.entityType,
     folder.entityType,
     variable.entityType,
@@ -22,8 +22,7 @@ module.exports = ({
   ]);
 
   // Reads
-  const resolveEntityFromId = (propertyName, entityType) =>
-    props => {
+  const resolveEntityFromId = (propertyName, entityType, props) => {
       const id = props[propertyName];
       if(R.isNil(id)){
         return null;

@@ -30,7 +30,7 @@ module.exports = ({
       scopedDataSet: {
         type: getType('DataSet', registry),
         // Resolve the data set object from the data set ID
-        resolve: resolveEntityFromId('scopedDataSet', dataSet.entityType)
+        resolve: props => resolveEntityFromId('scopedDataSet', dataSet.entityType, props)
       },
       attributes: {
         type : new graphql.GraphQLList(getType('Attribute', registry)),

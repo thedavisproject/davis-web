@@ -15,7 +15,7 @@ module.exports = ({
       folder: {
         type : getType('Folder', registry),
         // Resolve the folder object from the folder ID
-        resolve: resolveEntityFromId('folder', folder.entityType)
+        resolve: props => resolveEntityFromId('folder', folder.entityType, props)
       },
       dataModified : { type : graphql.GraphQLDate },
       schema: { type: graphql.GraphQLJSON }
