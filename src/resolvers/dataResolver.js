@@ -19,14 +19,14 @@ module.exports = ({
   parseDataFile
 }) => {
 
-  const resolveDataQuery = ({dataSets, q}) => {
+  const resolveDataQuery = ({dataSets, q, limit}) => {
 
     const filters = isNilOrEmpty(q) ? [] :
       thread(q,
         queryString.stringToMap,
         queryString.queryFilters.deSerialize);
 
-    return task2Promise(dataQuery(filters, dataSets));
+    return task2Promise(dataQuery(filters, dataSets, limit));
   };
 
   const resolveDataAnalyze = ({dataSet, fileId, valueLimit}) => {

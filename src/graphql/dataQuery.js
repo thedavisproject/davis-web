@@ -21,6 +21,9 @@ module.exports = ({
       q: {
         type: graphql.GraphQLString,
         defaultValue: ''
+      },
+      limit: {
+        type: graphql.GraphQLInt
       }
     },
     resolve: (_, args) => resolveDataQuery(args)
