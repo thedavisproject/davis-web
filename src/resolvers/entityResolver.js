@@ -23,12 +23,12 @@ module.exports = ({
 
   // Reads
   const resolveEntityFromId = (propertyName, entityType, props) => {
-      const id = props[propertyName];
-      if(R.isNil(id)){
-        return null;
-      }
-      return entityLoaders[entityType].load(props[propertyName]);
-    };
+    const id = props[propertyName];
+    if(R.isNil(id)){
+      return null;
+    }
+    return entityLoaders[entityType].load(props[propertyName]);
+  };
 
   const resolveAttributesFromVariable = id => task2Promise(entityRepository.query(
     attribute.entityType,
