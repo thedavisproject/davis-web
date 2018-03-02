@@ -9,6 +9,7 @@ const {isNilOrEmpty} = shared.string;
 const queryString = require('../queryString');
 
 module.exports = ({
+  user,
   dataQuery,
   dataAnalyze,
   dataDelete,
@@ -47,6 +48,7 @@ module.exports = ({
       R.map(m => m.variable));
 
     return task2Promise(importJob.queue({
+      userId: user.id,
       dataSet,
       columnMappings: mappingsAsMap,
       filePath,
