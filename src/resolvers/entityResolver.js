@@ -1,6 +1,6 @@
 const R = require('ramda');
 const model = require('davis-model');
-const { dataSet, folder, variable, attribute } = model;
+const { dataSet, folder, variable, attribute, user } = model;
 const q = model.query.build;
 const Task = require('data.task');
 const Async = require('control.async')(Task);
@@ -18,7 +18,8 @@ module.exports = ({
     dataSet.entityType,
     folder.entityType,
     variable.entityType,
-    attribute.entityType
+    attribute.entityType,
+    user.entityType
   ]);
 
   // Reads
@@ -45,13 +46,24 @@ module.exports = ({
   };
 
   // Mutations
-  const entityMutate = mutateFn => entityType => R.pipe(
+  const entityCreate = entityType => R.pipe(
     R.map(R.assoc('entityType', entityType)),
-    mutateFn,
+    entityRepository.create,
     task2Promise);
 
-  const entityCreate = entityMutate(entityRepository.create);
-  const entityUpdate = entityMutate(entityRepository.update);
+  const entityUpdate = entityType => partialEntities =>
+    thread(partialEntities,
+      // First grab the entities to merge the updates with
+      entities => entityRepository.query(
+        entityType,
+        q.in('id', entities.map(R.prop('id')))),
+      // Join with the update fields
+      R.map(existingEntities => {
+        const indexedPartials = R.indexBy(R.prop('id'), partialEntities);
+        return existingEntities.map(e => Object.assign({}, e, indexedPartials[e.id]));
+      }),
+      R.chain(entityRepository.update),
+      task2Promise);
 
   const applyEntityConstructor = R.curry((ctr, parameterNames, partialEntity) => {
     if(partialEntity.id){
@@ -98,6 +110,27 @@ module.exports = ({
 
   const resolveAttributeUpdate = entityUpdate(attribute.entityType);
 
+  // *** User ***
+  const resolveUserCreate = R.pipe(
+    R.map(partialEntity => {
+      if(partialEntity.id){
+        throw new Error(`Entity ID must not be supplied for CREATE action: ${partialEntity}`);
+      }
+
+      return thread(
+        user.new(null, partialEntity.name, partialEntity.email),
+        user.setPassword(partialEntity.password),
+        R.isNil(partialEntity.admin)? R.identity : R.assoc('admin', partialEntity.admin),
+        R.isNil(partialEntity.gui)? R.identity : R.assoc('gui', partialEntity.gui));
+    }),
+    entityCreate(user.entityType));
+
+  const resolveUserUpdate = R.pipe(
+    R.map(partialEntity => R.isNil(partialEntity.password) ?
+      partialEntity:
+      user.setPassword(partialEntity.password, partialEntity)),
+    entityUpdate(user.entityType));
+
   // Delete
   const resolveEntityDelete = (entityType, {ids}) => task2Promise(entityRepository.delete(entityType, ids));
 
@@ -110,10 +143,12 @@ module.exports = ({
     resolveDataSetCreate,
     resolveVariableCreate,
     resolveAttributeCreate,
+    resolveUserCreate,
     resolveFolderUpdate,
     resolveDataSetUpdate,
     resolveVariableUpdate,
     resolveAttributeUpdate,
+    resolveUserUpdate,
     resolveEntityDelete
   };
 };

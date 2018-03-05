@@ -29,7 +29,7 @@ module.exports = ({
     name: 'AttributeCreate',
     fields: () => Object.assign({}, entityCreateFields, {
       key      : { type : graphql.GraphQLString },
-      variable : { type : graphql.GraphQLInt },
+      variable : { type : new graphql.GraphQLNonNull(graphql.GraphQLInt) },
       parent   : { type : graphql.GraphQLJSON }
     })
   });

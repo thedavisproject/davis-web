@@ -1,5 +1,5 @@
 const model = require('davis-model');
-const { dataSet, folder, variable, attribute } = model;
+const { dataSet, folder, variable, attribute, user } = model;
 const { getType } = require('./typeRegistry');
 
 module.exports = ({
@@ -11,10 +11,12 @@ module.exports = ({
     resolveDataSetCreate,
     resolveVariableCreate,
     resolveAttributeCreate,
+    resolveUserCreate,
     resolveFolderUpdate,
     resolveDataSetUpdate,
     resolveVariableUpdate,
     resolveAttributeUpdate,
+    resolveUserUpdate,
     resolveEntityDelete
   }
 }) => {
@@ -53,7 +55,9 @@ module.exports = ({
       variables: entityGraphQLQuery(getType('Variable', registry), variable.entityType),
       variable: entityIndividualGraphQLQuery(getType('Variable', registry), variable.entityType),
       attributes: entityGraphQLQuery(getType('Attribute', registry), attribute.entityType),
-      attribute: entityIndividualGraphQLQuery(getType('Attribute', registry), attribute.entityType)
+      attribute: entityIndividualGraphQLQuery(getType('Attribute', registry), attribute.entityType),
+      users: entityGraphQLQuery(getType('User', registry), user.entityType),
+      user: entityIndividualGraphQLQuery(getType('User', registry), user.entityType)
     }
   });
 
@@ -94,7 +98,13 @@ module.exports = ({
         getType('AttributeCreate', registry),
         getType('Attribute', registry),
         'attributes',
-        resolveAttributeCreate)
+        resolveAttributeCreate),
+
+      users: entityGraphQLMutate(
+        getType('UserCreate', registry),
+        getType('User', registry),
+        'users',
+        resolveUserCreate)
     }
   });
 
@@ -123,7 +133,13 @@ module.exports = ({
         getType('AttributeUpdate', registry),
         getType('Attribute', registry),
         'attributes',
-        resolveAttributeUpdate)
+        resolveAttributeUpdate),
+
+      users: entityGraphQLMutate(
+        getType('UserUpdate', registry),
+        getType('User', registry),
+        'users',
+        resolveUserUpdate)
     }
   });
 
@@ -143,7 +159,8 @@ module.exports = ({
       folders: entityGraphQLDelete(folder.entityType),
       dataSets: entityGraphQLDelete(dataSet.entityType),
       variables: entityGraphQLDelete(variable.entityType),
-      attributes: entityGraphQLDelete(attribute.entityType)
+      attributes: entityGraphQLDelete(attribute.entityType),
+      users: entityGraphQLDelete(user.entityType)
     }
   });
 
