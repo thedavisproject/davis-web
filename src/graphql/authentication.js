@@ -23,15 +23,22 @@ module.exports = ({
     resolve: (_, args) => resolveUserHasGuiAccess(args)
   };
 
-  const gqlAuthentication = registryIgnored => new graphql.GraphQLObjectType({
-    name: 'Authentication',
+  const gqlAuthenticationQuery = registryIgnored => new graphql.GraphQLObjectType({
+    name: 'AuthenticationQuery',
     fields: {
-      login: gqlLogin,
       hasGuiAccess: gqlUserHasGuiAccess
     }
   });
 
+  const gqlAuthenticationMutation = registryIgnored => new graphql.GraphQLObjectType({
+    name: 'AuthenticationMutation',
+    fields: {
+      login: gqlLogin
+    }
+  });
+
   return {
-    gqlAuthentication
+    gqlAuthenticationQuery,
+    gqlAuthenticationMutation
   };
 };
