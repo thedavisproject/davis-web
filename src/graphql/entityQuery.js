@@ -1,5 +1,5 @@
 const model = require('davis-model');
-const { dataSet, folder, variable, attribute, user } = model;
+const { dataSet, folder, variable, attribute, user, query } = model;
 const { getType } = require('./typeRegistry');
 
 module.exports = ({
@@ -21,6 +21,31 @@ module.exports = ({
   }
 }) => {
 
+  const gqlEntityQueryOptionsSortTypeEnum = registryIgnored => new graphql.GraphQLEnumType({
+    name: 'EntityQueryOptionsSortType',
+    values: {
+      ASCENDING: { value: query.sort.direction.ascending },
+      DESCENDING: { value: query.sort.direction.descending }
+    }
+  });
+
+  const gqlEntityQueryOptionsSort = registry => new graphql.GraphQLInputObjectType({
+    name: 'EntityQueryOptionsSort',
+    fields: {
+      direction: { type: getType('EntityQueryOptionsSortType', registry) },
+      property: { type: graphql.GraphQLString }
+    }
+  });
+
+  const gqlEntityQueryOptions = registry => new graphql.GraphQLInputObjectType({
+    name: 'EntityQueryOptions',
+    fields: {
+      sort: { type: getType('EntityQueryOptionsSort', registry)},
+      take: { type: graphql.GraphQLInt },
+      skip: { type: graphql.GraphQLInt }
+    }
+  });
+
   function entityIndividualGraphQLQuery(gqlType, entityType){
     return {
       type: gqlType,
@@ -33,12 +58,15 @@ module.exports = ({
     };
   }
 
-  function entityGraphQLQuery(gqlType, entityType){
+  function entityGraphQLQuery(gqlType, entityType, registry){
     return {
       type: new graphql.GraphQLList(gqlType),
       args: {
         query: {
           type : graphql.GraphQLJSON
+        },
+        options: {
+          type: getType('EntityQueryOptions', registry)
         }
       },
       resolve: (_, args) => resolveEntityQuery(entityType, args)
@@ -48,15 +76,15 @@ module.exports = ({
   const gqlEntityQuery = registry => new graphql.GraphQLObjectType({
     name: 'EntityQuery',
     fields: {
-      folders: entityGraphQLQuery(getType('Folder', registry), folder.entityType),
+      folders: entityGraphQLQuery(getType('Folder', registry), folder.entityType, registry),
       folder: entityIndividualGraphQLQuery(getType('Folder', registry), folder.entityType),
-      dataSets: entityGraphQLQuery(getType('DataSet', registry), dataSet.entityType),
+      dataSets: entityGraphQLQuery(getType('DataSet', registry), dataSet.entityType, registry),
       dataSet: entityIndividualGraphQLQuery(getType('DataSet', registry), dataSet.entityType),
-      variables: entityGraphQLQuery(getType('Variable', registry), variable.entityType),
+      variables: entityGraphQLQuery(getType('Variable', registry), variable.entityType, registry),
       variable: entityIndividualGraphQLQuery(getType('Variable', registry), variable.entityType),
-      attributes: entityGraphQLQuery(getType('Attribute', registry), attribute.entityType),
+      attributes: entityGraphQLQuery(getType('Attribute', registry), attribute.entityType, registry),
       attribute: entityIndividualGraphQLQuery(getType('Attribute', registry), attribute.entityType),
-      users: entityGraphQLQuery(getType('User', registry), user.entityType),
+      users: entityGraphQLQuery(getType('User', registry), user.entityType, registry),
       user: entityIndividualGraphQLQuery(getType('User', registry), user.entityType)
     }
   });
@@ -174,6 +202,9 @@ module.exports = ({
   });
 
   return {
+    gqlEntityQueryOptionsSortTypeEnum,
+    gqlEntityQueryOptionsSort,
+    gqlEntityQueryOptions,
     gqlEntityQuery,
     gqlEntityCreate,
     gqlEntityUpdate,

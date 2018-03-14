@@ -41,8 +41,11 @@ module.exports = ({
       .map(results => R.isNil(results) || results.length < 1 ? null : results[0]));
   };
 
-  const resolveEntityQuery = (entityType, {query = []}) => {
-    return task2Promise(entityRepository.query(entityType, query));
+  const resolveEntityQuery = (entityType, {
+    query = [],
+    options
+  }) => {
+    return task2Promise(entityRepository.query(entityType, query, options));
   };
 
   // Mutations
