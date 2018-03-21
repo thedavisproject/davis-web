@@ -2,28 +2,19 @@ module.exports = ({
   config
 }) => {
 
-  const upload = require('multer')({
-    dest: config.upload.path
-  });
+  return function(req, res){
 
-  return (route, app) => {
+    if(req.files.length < 1){
+      res.status(400).send('Error: No file attached');
+    }
 
-    app.post(route,
-      upload.any(),
-      function(req, res){
+    const fileStats = req.files[0];
 
-        if(req.files.length < 1){
-          res.status(400).send('Error: No file attached');
-        }
-
-        const fileStats = req.files[0];
-
-        res.send({
-          id: fileStats.filename,
-          name: fileStats.originalname,
-          mimetype: fileStats.mimetype,
-          size: fileStats.size
-        });
-      });
+    res.send({
+      id: fileStats.filename,
+      name: fileStats.originalname,
+      mimetype: fileStats.mimetype,
+      size: fileStats.size
+    });
   };
 };
